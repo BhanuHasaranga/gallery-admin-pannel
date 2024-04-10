@@ -1,27 +1,37 @@
-'use client'
+'use client';
+
 import React, { useState } from 'react';
 
 export default function UploadForm() {
     const [inProgress, setInProgress] = useState(false);
-    const [albumName, setAlbumName] = useState<string>('');
-    const [albumDescription, setAlbumDescription] = useState<string>('');
+    const [albumName, setAlbumName] = useState('');
+    const [albumDescription, setAlbumDescription] = useState('');
+    const [albumType, setAlbumType] = useState('');
+    const [files, setFiles] = useState<FileList | null>(null);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setInProgress(true);
 
-        const data = {
-            name: albumName,
-            description: albumDescription,
-        };
+        if (!files || files.length === 0) {
+            console.error('No files selected');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.set('name', albumName);
+        formData.set('description', albumDescription);
+        formData.set('type', albumType);
+
+        // Append all selected files to the FormData
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+        }
 
         try {
             const response = await fetch('/api/albums', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
+                body: formData,
             });
 
             if (!response.ok) {
@@ -37,13 +47,15 @@ export default function UploadForm() {
         setInProgress(false);
     };
 
-    // Object containing CSS styles
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFiles = e.target.files;
+        setFiles(selectedFiles);
+    };
+
     const styles = {
-        form: "bg-gray-100 p-4 rounded-lg", // Styling for the form container
-        input: "border p-2 mb-4 w-full border-gray-300 rounded", // Styling for the file input
-        button: "bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors", // Styling for the upload button
-        previewContainer: "mt-4", // Styling for the container of the image preview
-        previewImage: "rounded-lg", // Styling for the image preview
+        form: "bg-gray-100 p-4 rounded-lg",
+        input: "border p-2 mb-4 w-full border-gray-300 rounded",
+        button: "bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors",
     };
 
     return (
@@ -64,7 +76,22 @@ export default function UploadForm() {
                 className={styles.input}
             />
 
-            <button className={styles.button} type='submit' disabled={inProgress}>
+            <input
+                type='text'
+                placeholder='Album Type'
+                value={albumType}
+                onChange={(e) => setAlbumType(e.target.value)}
+                className={styles.input}
+            />
+
+            <input
+                type="file"
+                name="files"
+                multiple
+                onChange={handleFileChange}
+            />
+
+            <button className={styles.button} type='submit' disabled={inProgress || !files}>
                 {inProgress ? 'Uploading...' : 'Upload'}
             </button>
         </form>

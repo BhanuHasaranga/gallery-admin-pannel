@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma schema with relation between albums and urls
 
 generator client {
   provider = "prisma-client-js"
@@ -14,16 +10,24 @@ datasource db {
 }
 
 model albums {
-  id Int @id @default(autoincrement())
-  name String
+  id          Int       @id @default(autoincrement())
+  name        String
   description String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  type        String
+  status      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  // Define a one-to-many relation with urls
+  urls        urls[]    // One album can have many urls
 }
 
-model images {
-  id Int @id @default(autoincrement())
-  data String @db.LongText
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model urls {
+  id          Int       @id @default(autoincrement())
+  url         String
+  status      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  // Define a many-to-one relation with albums
+  album       albums    @relation(fields: [albumId], references: [id])
+  albumId     Int       // Foreign key referencing the album id
 }

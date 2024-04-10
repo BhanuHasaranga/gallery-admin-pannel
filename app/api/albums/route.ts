@@ -1,29 +1,77 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { join, dirname } from "path";
+import { writeFile, mkdir } from "fs/promises";
 
 const prisma = new PrismaClient();
 
-export async function POST(request: { json: () => any; }) {
-
+export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
-    console.log(data);	
-    const {name, description} = data
+    const data = await request.formData();
 
+    const name: string | null = data.get('name') as string;
+    const description: string | null = data.get('description') as string;
+    const type: string | null = data.get('type') as string;
+    const files: FileList | null = data.getAll('files') as unknown as FileList;
+
+    console.log('Album Name:', name);
+    console.log('Album Description:', description);
+    console.log('Album Type:', type);
+
+    if (!files || files.length === 0) {
+      return NextResponse.json({ success: false, error: "No files uploaded" });
+    }
+
+    const urls = [];
+
+    for (const file of files) {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+  
+      const filePath = join('F:\\tmp', file.name);
+      const directoryPath = dirname(filePath);
+
+      try {
+        // Create the directory if it doesn't exist
+        await mkdir(directoryPath, { recursive: true });
+        
+        // Write the file to the specified path
+        await writeFile(filePath, buffer);
+        console.log(`File saved to: ${filePath}`);
+  
+        // Store the file URL for Prisma
+        urls.push({ url: filePath });
+      } catch (error) {
+        console.error("Error saving file:", error);
+        return NextResponse.json({ success: false, error: "Failed to save file" });
+      }
+    }
+
+    // Create new album with associated URLs in Prisma
     const newAlbum = await prisma.albums.create({
       data: {
         name,
-        description
-      }
+        description,
+        type,
+        urls: {
+          createMany: {
+            data: urls,
+          },
+        },
+      },
+      include: {
+        urls: true,
+      },
     });
-    return NextResponse.json({newAlbum});
+
+    // Respond with a JSON object containing the newly created album and its URLs
+    return NextResponse.json({ newAlbum });
 
   } catch (error) {
-    console.log("Error creating album",error)
+    console.log("Error creating album", error);
     return NextResponse.json({
       status: 500,
       message: 'Internal server error',
     });
   }
-
 }
