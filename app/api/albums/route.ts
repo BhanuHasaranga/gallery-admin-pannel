@@ -76,39 +76,68 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// export async function GET(request: NextRequest) {
+//   try {
+//     const { searchParams } = new URL(request.url);
+//     const name = searchParams.get('name');
+
+//     if (!name || typeof name !== 'string') {
+//       return NextResponse.json({ success: false, error: "Invalid album name" });
+//     }
+
+//     const album = await prisma.albums.findFirst({
+//       where: {
+//         name,
+//       },
+//       include: {
+//         urls: true,
+//       },
+//     });
+
+//     if (!album) {
+//       return NextResponse.json({ success: false, error: "Album not found" });
+//     }
+
+//     const { description, type, urls} = album;
+//     console.log("urls", urls);
+
+//     return NextResponse.json({
+//       name,
+//       description,
+//       type,
+//       urls: urls.map((url: { url: any; }) => url.url), // Extract only the 'url' property
+//     });
+//   } catch (error) {
+//     console.error("Error retrieving album:", error);
+//     return NextResponse.json({
+//       status: 500,
+//       message: 'Internal server error',
+//     });
+//   }
+// }
+
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const name = searchParams.get('name');
-
-    if (!name || typeof name !== 'string') {
-      return NextResponse.json({ success: false, error: "Invalid album name" });
-    }
-
-    const album = await prisma.albums.findFirst({
-      where: {
-        name,
-      },
+    const albums = await prisma.albums.findMany({
       include: {
         urls: true,
       },
     });
 
-    if (!album) {
-      return NextResponse.json({ success: false, error: "Album not found" });
+    if (!albums || albums.length === 0) {
+      return NextResponse.json({ success: false, error: "No albums found" });
     }
 
-    const { description, type, urls} = album;
-    console.log("urls", urls);
+    const formattedAlbums = albums.map((album) => ({
+      name: album.name,
+      description: album.description,
+      type: album.type,
+      urls: album.urls.map((url) => url.url), // Extract only the 'url' property
+    }));
 
-    return NextResponse.json({
-      name,
-      description,
-      type,
-      urls: urls.map((url: { url: any; }) => url.url), // Extract only the 'url' property
-    });
+    return NextResponse.json(formattedAlbums);
   } catch (error) {
-    console.error("Error retrieving album:", error);
+    console.error("Error retrieving albums:", error);
     return NextResponse.json({
       status: 500,
       message: 'Internal server error',
