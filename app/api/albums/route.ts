@@ -75,3 +75,43 @@ export async function POST(request: NextRequest) {
     });
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const name = searchParams.get('name');
+
+    if (!name || typeof name !== 'string') {
+      return NextResponse.json({ success: false, error: "Invalid album name" });
+    }
+
+    const album = await prisma.albums.findFirst({
+      where: {
+        name,
+      },
+      include: {
+        urls: true,
+      },
+    });
+
+    if (!album) {
+      return NextResponse.json({ success: false, error: "Album not found" });
+    }
+
+    const { description, type, urls} = album;
+    console.log("urls", urls);
+
+    return NextResponse.json({
+      name,
+      description,
+      type,
+      urls: urls.map((url: { url: any; }) => url.url), // Extract only the 'url' property
+    });
+  } catch (error) {
+    console.error("Error retrieving album:", error);
+    return NextResponse.json({
+      status: 500,
+      message: 'Internal server error',
+    });
+  }
+}
