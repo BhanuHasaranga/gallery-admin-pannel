@@ -37,7 +37,8 @@ export default function AdminPanel() {
           albums.map((album) =>
             // Check if album has a valid ID before rendering Link
             <Link 
-              href={{pathname: "/album-info", query: {id: album.id}}}
+              // href={{pathname: "/album-info", query: {id: album.id}}}
+              href={`admin-pannel/${album.id}`}
               key={album.id}
             >
               <AlbumCard
