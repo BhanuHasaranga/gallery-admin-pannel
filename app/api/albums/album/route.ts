@@ -59,3 +59,80 @@ export async function GET(request: NextRequest) {
 
 // Export the GET function
 export default GET;
+
+
+// Define the POST function for updating album details
+export async function POST(request: NextRequest) {
+  try {
+    const requestBody = await request.json();
+
+    const { id, name, description, status, urlsToAdd, urlsToUpdate } = requestBody;
+
+    // Validate 'id' as a number
+    const albumId = Number(id);
+    if (isNaN(albumId)) {
+      return NextResponse.json({ success: false, error: "Invalid album id" });
+    }
+
+    // Fetch the album from the database
+    const existingAlbum = await prisma.albums.findUnique({
+      where: {
+        id: albumId,
+      },
+      include: {
+        urls: true,
+      },
+    });
+
+    if (!existingAlbum) {
+      return NextResponse.json({ success: false, error: "Album not found" });
+    }
+
+    // Update album properties
+    const updatedAlbum = await prisma.albums.update({
+      where: {
+        id: albumId,
+      },
+      data: {
+        name,
+        description,
+        status,
+      },
+    });
+
+    // Update URLs
+    const urlsToCreate = urlsToAdd.map(url => ({
+      url,
+      albumId,
+    }));
+
+    const urlsToUpdatePromises = urlsToUpdate.map(async urlData => {
+      const { urlId, url, status } = urlData;
+      await prisma.urls.update({
+        where: {
+          id: urlId,
+        },
+        data: {
+          url,
+          status,
+        },
+      });
+    });
+
+    await Promise.all([
+      prisma.urls.createMany({
+        data: urlsToCreate,
+      }),
+      ...urlsToUpdatePromises,
+    ]);
+
+    return NextResponse.json({ success: true, message: "Album updated successfully" });
+
+  } catch (error) {
+    console.error("Error updating album:", error);
+    return NextResponse.json({
+      success: false,
+      error: 'Internal server error',
+    });
+  }
+}
