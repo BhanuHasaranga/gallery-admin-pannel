@@ -2,7 +2,11 @@
 
 import React, { useState } from 'react';
 
-export default function EditForm() {
+interface EditFormProps {
+    albumInfo: JSON;
+  }
+
+export default function EditForm ({albumInfo}:EditFormProps) {
     const [inProgress, setInProgress] = useState(false);
     const [albumName, setAlbumName] = useState('');
     const [albumDescription, setAlbumDescription] = useState('');
@@ -29,7 +33,7 @@ export default function EditForm() {
         }
 
         try {
-            const response = await fetch('/api/albums', {
+            const response = await fetch(`/api/albums/album?id=${albumInfo.id}`, {
                 method: 'POST',
                 body: formData,
             });
@@ -60,17 +64,19 @@ export default function EditForm() {
 
     return (
         <form onSubmit={handleSubmit} className={styles.form}>
+            <p>Album Name:</p>
             <input
                 type='text'
-                placeholder='Album Name'
+                placeholder={albumInfo.name}
                 value={albumName}
                 onChange={(e) => setAlbumName(e.target.value)}
                 className={styles.input}
             />
 
+            <p>Album Description:</p>
             <input
                 type='text'
-                placeholder='Album Description'
+                placeholder={albumInfo.description}
                 value={albumDescription}
                 onChange={(e) => setAlbumDescription(e.target.value)}
                 className={styles.input}

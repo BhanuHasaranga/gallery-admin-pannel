@@ -36,7 +36,7 @@ const AlbumInfo = () => {
 
   return (
     <div className="">
-      <Navbar pageTitle={"ALBUM INFO"} submitBtnTitle={"Edit Album"} submitBtnPath={"/edit-album"} />
+      <Navbar pageTitle={"ALBUM INFO"} submitBtnTitle={"Edit Album"} submitBtnPath={`/edit-album/${id}`} />
       <div className="p-4">
         <h2 className="text-xl font-semibold mb-2">Album Info</h2>
         <p className="text-gray-600">Title: {albumData.name}</p>
