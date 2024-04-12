@@ -31,7 +31,7 @@ export default function AdminPanel() {
   return (
     <Router>
     <>
-      <Navbar title={"ALBUMS"} btn={"Add New Album"} />
+      <Navbar pageTitle={"ALBUMS"} submitBtnTitle={"Add New Album"} submitBtnPath="/add-new-album" />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 p-10">
         {albums.length > 0 ? (
           albums.map((album) =>
@@ -49,7 +49,7 @@ export default function AdminPanel() {
 
           )
         ) : (
-          <p>No albums found.</p>
+          <p>Loading...</p>
         )}
       </div>
     </>
