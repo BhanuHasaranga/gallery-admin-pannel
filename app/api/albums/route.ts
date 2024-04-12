@@ -129,6 +129,7 @@ export async function GET(request: NextRequest) {
     }
 
     const formattedAlbums = albums.map((album) => ({
+      id: album.id,
       name: album.name,
       description: album.description,
       type: album.type,
