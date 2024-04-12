@@ -55,7 +55,7 @@ export default function UploadForm() {
     const styles = {
         form: "bg-gray-100 p-4 rounded-lg",
         input: "border p-2 mb-4 w-full border-gray-300 rounded",
-        button: "bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors",
+        button: "text-sm font-normal text-white bg-blue-500 px-3 py-1 rounded-md hover:bg-blue-600 transition-colors",
     };
 
     return (
@@ -76,13 +76,15 @@ export default function UploadForm() {
                 className={styles.input}
             />
 
-            <input
-                type='text'
-                placeholder='Album Type'
+            <select
                 value={albumType}
                 onChange={(e) => setAlbumType(e.target.value)}
                 className={styles.input}
-            />
+            >
+                <option value="">Select Album Type</option>
+                <option value="photography">Photography</option>
+                <option value="video production">Video Production</option>
+            </select>
 
             <input
                 type="file"

@@ -1,11 +1,11 @@
 'use client'
+import { Navbar } from '@/components/navbar';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 const AlbumInfo = () => {
   const pathname = usePathname();
   const id = pathname.split('/').pop();
-
 
   const [albumData, setAlbumData] = useState(null);
 
@@ -35,15 +35,21 @@ const AlbumInfo = () => {
   }
 
   return (
-    <div>
-      <p>Album Info</p>
-      <p>ID: {id}</p>
-      {albumData && (
-        <div>
-          <p>Title: {albumData.name}</p>
-          {/* Display other album info */}
-        </div>
-      )}
+    <div className="">
+      <Navbar title={"ALBUM INFO"} btn={"Edit Album"} />
+      <div className="p-4">
+        <h2 className="text-xl font-semibold mb-2">Album Info</h2>
+        <p className="text-gray-600">Title: {albumData.name}</p>
+        <p className="text-gray-600">Description: {albumData.description}</p>
+        <p className="text-gray-600">Type: {albumData.type}</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 p-10">
+        {albumData.urls.map((imageUrl, index) => (
+          <div key={index} className="relative overflow-hidden rounded-lg shadow-sm">
+            <img src={imageUrl} alt={`Image ${index}`} className="w-full h-64 object-cover" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

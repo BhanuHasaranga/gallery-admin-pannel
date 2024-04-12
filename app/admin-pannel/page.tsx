@@ -31,13 +31,12 @@ export default function AdminPanel() {
   return (
     <Router>
     <>
-      <Navbar />
+      <Navbar title={"ALBUMS"} btn={"Add New Album"} />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 p-10">
         {albums.length > 0 ? (
           albums.map((album) =>
             // Check if album has a valid ID before rendering Link
             <Link 
-              // href={{pathname: "/album-info", query: {id: album.id}}}
               href={`admin-pannel/${album.id}`}
               key={album.id}
             >
