@@ -65,8 +65,9 @@ export default GET;
 export async function POST(request: NextRequest) {
   try {
     const requestBody = await request.json();
+    console.log(requestBody);
 
-    const { id, name, description, status, urlsToAdd, urlsToUpdate } = requestBody;
+    const { id, name, description, status, urlsToAdd = [], urlsToUpdate = [] } = requestBody;
 
     // Validate 'id' as a number
     const albumId = Number(id);
@@ -88,24 +89,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Album not found" });
     }
 
+    // Prepare data for updating the album
+    const updateData = {
+      name,
+      description,
+      status,
+    };
+
     // Update album properties
     const updatedAlbum = await prisma.albums.update({
       where: {
         id: albumId,
       },
-      data: {
-        name,
-        description,
-        status,
-      },
+      data: updateData,
     });
 
-    // Update URLs
+    // Prepare data for creating new URLs
     const urlsToCreate = urlsToAdd.map(url => ({
       url,
       albumId,
     }));
 
+    // Prepare promises to update existing URLs
     const urlsToUpdatePromises = urlsToUpdate.map(async urlData => {
       const { urlId, url, status } = urlData;
       await prisma.urls.update({
@@ -119,10 +124,13 @@ export async function POST(request: NextRequest) {
       });
     });
 
+    // Execute all database operations in parallel
     await Promise.all([
+      // Create new URLs
       prisma.urls.createMany({
         data: urlsToCreate,
       }),
+      // Update existing URLs
       ...urlsToUpdatePromises,
     ]);
 
