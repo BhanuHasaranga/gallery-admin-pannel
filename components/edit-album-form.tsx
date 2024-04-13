@@ -3,28 +3,28 @@
 import React, { useState } from "react";
 
 interface EditFormProps {
-  albumInfo: JSON;
+  albumInfo: { name: string; description: string };
 }
 
-export default function EditForm({ albumInfo }: EditFormProps) {
+const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
   const [inProgress, setInProgress] = useState(false);
-  const [albumName, setAlbumName] = useState("");
-  const [albumDescription, setAlbumDescription] = useState("");
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [albumName, setAlbumName] = useState(albumInfo.name);
+  const [albumDescription, setAlbumDescription] = useState(albumInfo.description);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setInProgress(true);
 
     const formData = new FormData();
-    formData.set("name", albumName);
-    formData.set("description", albumDescription);
+    formData.append("id", "1"); // Replace '1' with the actual album ID
 
-    // Append all selected files to the FormData
-    if (files) {
-      for (let i = 0; i < files.length; i++) {
-        formData.append("files", files[i]);
-      }
+    if (albumName.trim() !== "") {
+      formData.append("name", albumName);
+    }
+
+    if (albumDescription.trim() !== "") {
+      formData.append("description", albumDescription);
     }
 
     try {
@@ -34,59 +34,56 @@ export default function EditForm({ albumInfo }: EditFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to upload album");
+        throw new Error("Failed to update album");
       }
 
       const responseData = await response.json();
-      console.log("New Album:", responseData.newAlbum);
+      console.log("Album updated successfully:", responseData.message);
     } catch (error) {
-      console.error("Error uploading album:", error);
+      console.error("Error updating album:", error);
+      setErrorMessage("Failed to update album. Please try again.");
     }
 
     setInProgress(false);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files;
-    setFiles(selectedFiles);
+  const handleAlbumNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAlbumName(e.target.value);
   };
 
-  const styles = {
-    form: "bg-gray-100 p-4 rounded-lg",
-    input: "border p-2 mb-4 w-full border-gray-300 rounded",
-    button:
-      "text-sm font-normal text-white bg-blue-500 px-3 py-1 rounded-md hover:bg-blue-600 transition-colors",
+  const handleAlbumDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAlbumDescription(e.target.value);
   };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
+    <form onSubmit={handleSubmit} className="bg-gray-100 p-4 rounded-lg">
       <p>Album Name:</p>
       <input
         type="text"
-        placeholder={albumInfo.name}
         value={albumName}
-        onChange={(e) => setAlbumName(e.target.value)}
-        className={styles.input}
+        onChange={handleAlbumNameChange}
+        className="border p-2 mb-4 w-full border-gray-300 rounded"
       />
 
       <p>Album Description:</p>
       <input
         type="text"
-        placeholder={albumInfo.description}
         value={albumDescription}
-        onChange={(e) => setAlbumDescription(e.target.value)}
-        className={styles.input}
+        onChange={handleAlbumDescriptionChange}
+        className="border p-2 mb-4 w-full border-gray-300 rounded"
       />
 
-      <input type="file" name="files" multiple onChange={handleFileChange} />
+      {errorMessage && <p className="text-red-500">{errorMessage}</p>}
 
       <button
-        className={styles.button}
         type="submit"
-        disabled={inProgress || !files}
+        className="text-sm font-normal text-white bg-blue-500 px-3 py-1 rounded-md hover:bg-blue-600 transition-colors"
+        disabled={inProgress}
       >
-        {inProgress ? "Editing..." : "Edit"}
+        {inProgress ? "Updating..." : "Update"}
       </button>
     </form>
   );
-}
+};
+
+export default EditForm;
