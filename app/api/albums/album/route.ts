@@ -1,6 +1,8 @@
 // Import required modules
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { join, dirname } from "path";
+import { writeFile, mkdir } from "fs/promises";
 
 // Initialize PrismaClient outside the function scope
 const prisma = new PrismaClient();
@@ -61,78 +63,91 @@ export async function GET(request: NextRequest) {
 export default GET;
 
 
+
 // Define the POST function for updating album details
 export async function POST(request: NextRequest) {
   try {
-    const requestBody = await request.json();
-    console.log(requestBody);
+    const formData = await request.formData();
 
-    const { id, name, description, status, urlsToAdd = [], urlsToUpdate = [] } = requestBody;
+    const albumId = Number(formData.get('id'));
 
-    // Validate 'id' as a number
-    const albumId = Number(id);
     if (isNaN(albumId)) {
       return NextResponse.json({ success: false, error: "Invalid album id" });
     }
 
-    // Fetch the album from the database
+    // Fetch the existing album from the database
     const existingAlbum = await prisma.albums.findUnique({
-      where: {
-        id: albumId,
-      },
-      include: {
-        urls: true,
-      },
+      where: { id: albumId },
+      include: { urls: true },
     });
 
     if (!existingAlbum) {
       return NextResponse.json({ success: false, error: "Album not found" });
     }
 
+    // Extract form data
+    const name = formData.get('name') as string | undefined;
+    const description = formData.get('description') as string | undefined;
+    const status = formData.get('status') === 'true'; // Convert to boolean
+
     // Prepare data for updating the album
-    const updateData = {
-      name,
-      description,
-      status,
-    };
+    const updateData: any = {};
+
+    if (name !== undefined) {
+      updateData.name = name;
+    }
+
+    if (description !== undefined) {
+      updateData.description = description;
+    }
+
+    if (formData.has('status')) {
+      updateData.status = status;
+    }
 
     // Update album properties
     const updatedAlbum = await prisma.albums.update({
-      where: {
-        id: albumId,
-      },
+      where: { id: albumId },
       data: updateData,
     });
 
-    // Prepare data for creating new URLs
-    const urlsToCreate = urlsToAdd.map(url => ({
-      url,
-      albumId,
-    }));
+    // Process file uploads
+    const files = formData.getAll('files') as unknown as FileList;
 
-    // Prepare promises to update existing URLs
-    const urlsToUpdatePromises = urlsToUpdate.map(async urlData => {
-      const { urlId, url, status } = urlData;
-      await prisma.urls.update({
-        where: {
-          id: urlId,
-        },
-        data: {
-          url,
-          status,
-        },
+    if (files.length > 0) {
+      const urlsToCreate = [];
+
+      for (const file of Array.from(files)) {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+      
+        const filePath = join('F:\\tmp', file.name);
+        const directoryPath = dirname(filePath);
+    
+        try {
+          // Create the directory if it doesn't exist
+          await mkdir(directoryPath, { recursive: true });
+          
+          // Write the file to the specified path
+          await writeFile(filePath, buffer);
+          console.log(`File saved to: ${filePath}`);
+    
+          // Store the file URL for Prisma
+          urlsToCreate.push({ url: filePath });
+        } catch (error) {
+          console.error("Error saving file:", error);
+          return NextResponse.json({ success: false, error: "Failed to save file" });
+        }
+      }
+
+      // Create new URLs in the database
+      await prisma.urls.createMany({
+        data: urlsToCreate.map(url => ({
+          url: url.url,
+          albumId: albumId,
+        })),
       });
-    });
-
-    // Execute all database operations in parallel
-    await Promise.all([
-      // Create new URLs
-      prisma.urls.createMany({
-        data: urlsToCreate,
-      }),
-      // Update existing URLs
-      ...urlsToUpdatePromises,
-    ]);
+    }
 
     return NextResponse.json({ success: true, message: "Album updated successfully" });
 
@@ -142,5 +157,7 @@ export async function POST(request: NextRequest) {
       success: false,
       error: 'Internal server error',
     });
+  } finally {
+    await prisma.$disconnect(); // Disconnect Prisma client after use
   }
 }
