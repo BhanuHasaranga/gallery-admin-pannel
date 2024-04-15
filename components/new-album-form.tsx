@@ -40,6 +40,10 @@ export default function UploadForm() {
 
             const responseData = await response.json();
             console.log('New Album:', responseData.newAlbum);
+
+            new Notification('Album uploaded successfully!');
+            window.location.reload();
+            
         } catch (error) {
             console.error('Error uploading album:', error);
         }
