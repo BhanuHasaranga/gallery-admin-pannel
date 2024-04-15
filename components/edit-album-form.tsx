@@ -59,6 +59,9 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
 
       // Assuming the update was successful, clear updatedUrlIds
       setUpdatedUrlIds([]);
+
+      // Refresh the page after successful update
+      window.location.reload();
     } catch (error) {
       console.error("Error updating album:", error);
       setErrorMessage("Failed to update album. Please try again.");
@@ -76,6 +79,10 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
         // Add the ID to updatedUrlIds
         setUpdatedUrlIds([...updatedUrlIds, urlToDelete.id]);
         console.log("Image deleted. URL ID to delete:", urlToDelete.id);
+
+        // Filter out the deleted image from albumInfo.urls to remove it from view
+        const updatedUrls = albumInfo.urls.filter((url: any) => url.url !== imageUrl);
+        albumInfo.urls = updatedUrls;
       }
     }
   };
