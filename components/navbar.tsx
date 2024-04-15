@@ -1,5 +1,4 @@
 import NextLink from "next/link";
-// import { Logo } from "@/components/icons";
 
 interface NavbarProps {
   pageTitle: string;
@@ -12,12 +11,7 @@ export const Navbar: React.FC<NavbarProps> = ({pageTitle, submitBtnTitle, submit
     <nav className="bg-white shadow-lg px-4 py-2 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex-shrink-0">
-          {/* <NextLink href="/admin-pannel"> */}
-            {/* <p className="flex items-center space-x-1"> */}
-              {/* <Logo /> */}
-              <p className="font-bold text-gray-800">{pageTitle}</p>
-            {/* </p> */}
-          {/* </NextLink> */}
+          <p className="font-bold text-gray-800">{pageTitle}</p>
         </div>
 
         <div className="hidden sm:flex sm:space-x-4">

@@ -20,7 +20,6 @@ const AlbumInfo = () => {
         setAlbumData(data);
       } catch (error) {
         console.error("Error fetching albums:", error);
-        // Handle error state if needed
       }
     };
 
@@ -29,7 +28,6 @@ const AlbumInfo = () => {
     }
   }, [id]);
 
-  // Render loading state while albumData is being fetched
   if (!albumData) {
     return <p>Loading...</p>;
   }
