@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { join, dirname } from "path";
 import { writeFile, mkdir } from "fs/promises";
+const { v4: uuidv4 } = require('uuid');
 
 const prisma = new PrismaClient(); // Initialize Prisma client for database operations
 
@@ -24,7 +25,8 @@ export async function POST(request: NextRequest) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
   
-      const filePath = join('F:\\tmp', file.name);
+      const uniqueFilename = `${uuidv4()}-${file.name}`; // Generate unique filename
+      const filePath = join('F:\\tmp', uniqueFilename);
       const directoryPath = dirname(filePath);
 
       try {
