@@ -8,6 +8,7 @@ import { writeFile, mkdir } from "fs/promises";
 const prisma = new PrismaClient();
 
 // Define the GET function
+// Define the GET function
 export async function GET(request: NextRequest) {
   try {
     // Parse the URL and retrieve the 'id' parameter
@@ -21,16 +22,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Invalid album id" });
     }
 
-    // Fetch album data from Prisma using the 'id', including related URLs with IDs
+    // Fetch album data from Prisma using the 'id', including related URLs with status=true
     const album = await prisma.albums.findUnique({
       where: {
         id: id,
       },
       include: {
-        urls: { // Include the 'urls' relation
-          select: { // Select specific fields from the 'urls' relation
-            id: true, // Include the 'id' field of each URL
-            url: true, // Include the 'url' field of each URL
+        urls: {
+          // Include the 'urls' relation with status=true filter
+          where: {
+            status: true
+          },
+          select: {
+            id: true,
+            url: true
           },
         },
       },
@@ -47,6 +52,7 @@ export async function GET(request: NextRequest) {
     const urlsWithIds = urls.map(url => ({ id: url.id, url: url.url }));
 
     return NextResponse.json({
+      id,
       name,
       description,
       type,
