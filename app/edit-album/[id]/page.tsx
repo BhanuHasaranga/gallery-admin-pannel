@@ -10,7 +10,7 @@ export default function AddNewAlbum() {
   const [albumData, setAlbumData] = useState(null);
 
   useEffect(() => {
-    const fetchSingleAlbum = async (id) => {
+    const fetchSingleAlbum = async (id: any) => {
       try {
         const response = await fetch(`/api/albums/album?id=${id}`);
         if (!response.ok) {
@@ -35,7 +35,7 @@ export default function AddNewAlbum() {
 
   return (
     <div className='py-4 px-16'>
-      <p>Edit Album</p>
+      <p>Edit Album {albumData.id}</p>
       <EditForm albumInfo={albumData}/>
     </div>
     
