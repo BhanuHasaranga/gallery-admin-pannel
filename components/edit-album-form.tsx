@@ -59,6 +59,10 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
 
       // Assuming the update was successful, clear updatedUrlIds
       setUpdatedUrlIds([]);
+
+      // Reload the page to reflect changes
+      window.location.reload();
+
     } catch (error) {
       console.error("Error updating album:", error);
       setErrorMessage("Failed to update album. Please try again.");
