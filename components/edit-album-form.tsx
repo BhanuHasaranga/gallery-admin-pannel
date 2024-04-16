@@ -1,4 +1,3 @@
-// edit-album-form.tsx
 import React, { useState } from "react";
 
 interface EditFormProps {
@@ -101,9 +100,33 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
     if (selectedFiles) {
-      setFiles(selectedFiles);
-      console.log("Files selected:", selectedFiles);
+      const isValidType = validateFileType(albumInfo.type, selectedFiles);
+      if (!isValidType) {
+        setErrorMessage(`Invalid file type for ${albumInfo.type}`);
+      } else {
+        setFiles(selectedFiles);
+        setErrorMessage(null);
+        console.log("Files selected:", selectedFiles);
+      }
     }
+  };
+
+  const validateFileType = (albumType: string, files: FileList) => {
+    const allowedTypes: Record<string, string[]> = {
+      photography: ['image/jpeg', 'image/png', 'image/gif'],
+      'video production': ['video/mp4', 'video/mpeg', 'video/quicktime'],
+    };
+
+    const acceptedTypes = allowedTypes[albumType];
+    if (!acceptedTypes) return false;
+
+    for (let i = 0; i < files.length; i++) {
+      if (!acceptedTypes.includes(files[i].type)) {
+        return false;
+      }
+    }
+
+    return true;
   };
 
   return (
@@ -125,7 +148,19 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
           className="border p-2 mb-4 w-full border-gray-300 rounded"
         />
 
-        <input type="file" name="files" multiple onChange={handleFileChange} />
+        <input
+          type="file"
+          name="files"
+          multiple
+          onChange={handleFileChange}
+          accept={
+            albumInfo.type === "photography"
+              ? "image/jpeg, image/png, image/gif"
+              : albumInfo.type === "video production"
+              ? "video/mp4, video/mpeg, video/quicktime"
+              : ""
+          }
+        />
 
         {errorMessage && <p className="text-red-500">{errorMessage}</p>}
 
@@ -140,7 +175,16 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 p-10">
         {albumInfo.urls.map((url: any) => (
           <div key={url.id} className="relative overflow-hidden rounded-lg shadow-sm">
-            <img src={url.url} alt={`Image ${url.id}`} className="w-full h-64 object-cover" />
+            {albumInfo.type === 'photography' ? (
+              <img src={url.url} alt={`Image ${url.id}`} className="w-full h-64 object-cover" />
+            ) : albumInfo.type === 'video production' ? (
+              <video controls className="w-full h-64 object-cover">
+                <source src={url.url} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <p>Unsupported media type</p>
+            )}
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-black bg-opacity-50 text-white">
               <button
                 className="text-sm font-normal text-white bg-red-500 px-3 py-1 rounded-md hover:bg-red-600 transition-colors"

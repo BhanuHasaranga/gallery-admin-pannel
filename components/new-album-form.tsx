@@ -8,6 +8,7 @@ export default function UploadForm() {
     const [albumDescription, setAlbumDescription] = useState('');
     const [albumType, setAlbumType] = useState('');
     const [files, setFiles] = useState<FileList | null>(null);
+    const [fileError, setFileError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -15,6 +16,11 @@ export default function UploadForm() {
 
         if (!files || files.length === 0) {
             console.error('No files selected');
+            return;
+        }
+
+        if (fileError) {
+            console.error('Invalid file type selected');
             return;
         }
 
@@ -54,12 +60,43 @@ export default function UploadForm() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = e.target.files;
         setFiles(selectedFiles);
+
+        if (selectedFiles && selectedFiles.length > 0) {
+            const isValidType = validateFileType(albumType, selectedFiles);
+            if (!isValidType) {
+                setFileError(`Invalid file type for ${albumType}`);
+            } else {
+                setFileError(null);
+            }
+        }
+    };
+
+    const validateFileType = (type: string, files: FileList | null) => {
+        if (!files) return false;
+
+        const allowedTypes: Record<string, string[]> = {
+            photography: ['image/jpeg', 'image/png', 'image/gif'],
+            'video production': ['video/mp4', 'video/mpeg', 'video/quicktime'],
+        };
+        
+
+        const acceptedTypes = allowedTypes[type];
+        if (!acceptedTypes) return false;
+
+        for (let i = 0; i < files.length; i++) {
+            if (!acceptedTypes.includes(files[i].type)) {
+                return false;
+            }
+        }
+
+        return true;
     };
 
     const styles = {
         form: "bg-gray-100 p-4 rounded-lg",
         input: "border p-2 mb-4 w-full border-gray-300 rounded",
         button: "text-sm font-normal text-white bg-blue-500 px-3 py-1 rounded-md hover:bg-blue-600 transition-colors",
+        error: "text-red-500 text-sm mt-1",
     };
 
     return (
@@ -82,7 +119,10 @@ export default function UploadForm() {
 
             <select
                 value={albumType}
-                onChange={(e) => setAlbumType(e.target.value)}
+                onChange={(e) => {
+                    setAlbumType(e.target.value);
+                    setFileError(null); // Reset file error when album type changes
+                }}
                 className={styles.input}
             >
                 <option value="">Select Album Type</option>
@@ -96,8 +136,10 @@ export default function UploadForm() {
                 multiple
                 onChange={handleFileChange}
             />
+            
+            {fileError && <p className={styles.error}>{fileError}</p>}
 
-            <button className={styles.button} type='submit' disabled={inProgress || !files}>
+            <button className={styles.button} type='submit' disabled={inProgress || !files || !!fileError}>
                 {inProgress ? 'Uploading...' : 'Upload'}
             </button>
         </form>

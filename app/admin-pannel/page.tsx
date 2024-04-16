@@ -43,6 +43,7 @@ export default function AdminPanel() {
                   title={album.name}
                   img={album.urls[0]}
                   albumId={album.id}
+                  albumType={album.type}
                 />
               </Link>
             ))
