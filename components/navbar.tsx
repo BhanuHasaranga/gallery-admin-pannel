@@ -1,4 +1,6 @@
 import NextLink from "next/link";
+import Cookies from "js-cookie";
+import { useRouter } from 'vue-router';
 
 interface NavbarProps {
   pageTitle: string;
@@ -7,6 +9,17 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({pageTitle, submitBtnTitle, submitBtnPath}) => {
+  const router = useRouter();
+
+  const logOut = () => {
+    Cookies.remove("loggedin");
+    if (router) {
+      router.push("/login");
+    }else {
+      window.location.href = '/login';
+    }
+    
+  }
   return (
     <nav className="bg-white shadow-lg px-4 py-2 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -22,8 +35,11 @@ export const Navbar: React.FC<NavbarProps> = ({pageTitle, submitBtnTitle, submit
             </p>
           </NextLink>
 
-          <button className="text-sm font-normal text-gray-600 bg-gray-100 px-3 py-1 rounded-md hover:bg-gray-200">
-            Logout
+          <button 
+            className="text-sm font-normal text-gray-600 bg-gray-100 px-3 py-1 rounded-md hover:bg-gray-200"
+            onClick={() => logOut()}
+          >
+              Logout
           </button>
         </div>
       </div>
