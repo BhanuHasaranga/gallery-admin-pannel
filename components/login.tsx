@@ -17,8 +17,6 @@ const Login = () => {
     const hardcodedEmail = "user@example.com";
     const hardcodedPassword = "password";
 
-    console.log(hardcodedEmail);
-
     if (email === hardcodedEmail && password === hardcodedPassword) {
       // Set the loggedin cookie (or local storage, session storage, etc.) to true
       // document.cookie = 'loggedin=true';
