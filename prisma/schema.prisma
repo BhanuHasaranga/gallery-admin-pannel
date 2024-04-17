@@ -31,3 +31,6 @@ model urls {
   album       albums    @relation(fields: [albumId], references: [id])
   albumId     Int       // Foreign key referencing the album id
 }
+
+
+// npx prisma migrate dev
