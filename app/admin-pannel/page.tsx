@@ -1,3 +1,4 @@
+// app\admin-pannel\page.tsx
 "use client"; // Enable client-side rendering
 
 import React, { useEffect, useState } from "react";
@@ -7,7 +8,16 @@ import { BrowserRouter as Router } from "react-router-dom";
 import Link from "next/link";
 
 export default function AdminPanel() {
-  const [albums, setAlbums] = useState([]); // State to hold album data fetched from API
+
+  type Album = {
+    id : any,
+    name: any,
+    description: any,
+    type: any, 
+    urls: any,
+  } 
+
+  const [albums, setAlbums] = useState<Album[]>([]); // State to hold album data fetched from API
 
   useEffect(() => {
     const fetchAlbums = async () => {

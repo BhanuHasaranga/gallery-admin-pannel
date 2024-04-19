@@ -1,3 +1,4 @@
+// app\admin-pannel\[id]\page.tsx
 'use client';
 import { Navbar } from '@/components/navbar';
 import { usePathname } from 'next/navigation';
@@ -7,10 +8,18 @@ const AlbumInfo = () => {
   const pathname = usePathname();
   const id = pathname.split('/').pop(); // Extract album ID from URL path
 
-  const [albumData, setAlbumData] = useState(null); // State to hold album data
+  type Album = {
+    id : any,
+    name: any,
+    description: any,
+    type: any, 
+    urls: any,
+  } 
+
+  const [albumData, setAlbumData] = useState<Album> (); // State to hold album data
 
   useEffect(() => {
-    const fetchSingleAlbum = async (id) => {
+    const fetchSingleAlbum = async (id: any) => {
       try {
         const response = await fetch(`/api/albums/album?id=${id}`); // Fetch data for a specific album
         if (!response.ok) {
@@ -38,7 +47,7 @@ const AlbumInfo = () => {
     if (albumData.type === 'photography') {
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 p-10">
-          {albumData.urls.map((imageUrl, index) => (
+          {albumData.urls.map((imageUrl: any, index: any) => (
             <div key={index} className="relative overflow-hidden rounded-lg shadow-sm">
               <img src={imageUrl} alt={`Image ${index}`} className="w-full h-64 object-cover" />
             </div>
@@ -48,7 +57,7 @@ const AlbumInfo = () => {
     } else if (albumData.type === 'video production') {
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 p-10">
-          {albumData.urls.map((videoUrl, index) => (
+          {albumData.urls.map((videoUrl: any, index: any) => (
             <div key={index} className="relative overflow-hidden rounded-lg shadow-sm">
               <video controls className="w-full h-64 object-cover">
                 <source src={videoUrl} type="video/mp4" />

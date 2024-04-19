@@ -1,3 +1,4 @@
+//app\edit-album\[id]\page.tsx
 'use client'
 import React , { useEffect, useState } from 'react'
 import EditForm from '@/components/edit-album-form'
@@ -7,7 +8,11 @@ export default function AddNewAlbum() {
   const pathname = usePathname();
   const id = pathname.split('/').pop();
 
-  const [albumData, setAlbumData] = useState(null);
+  type Album = {
+    id : any,
+  } 
+
+  const [albumData, setAlbumData] = useState<Album>();
 
   useEffect(() => {
     const fetchSingleAlbum = async (id: any) => {
