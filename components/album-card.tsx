@@ -1,9 +1,11 @@
+// components\album-card.tsx
 import React from 'react';
 
 interface AlbumCardProps {
   albumId: number;
   title: string;
   img: string;
+  albumType: string;
 }
 
 const AlbumCard: React.FC<AlbumCardProps> = ({ title, img, albumId }) => {
