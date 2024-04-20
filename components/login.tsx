@@ -1,14 +1,11 @@
 // components/Login.tsx
 'use client'
 import { useState } from 'react';
-import { useRouter } from 'vue-router';
 import Cookies from "js-cookie";
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
-  const router = useRouter();
 
   const handleLogin = () => {
     
@@ -19,17 +16,11 @@ const Login = () => {
 
     if (email === hardcodedEmail && password === hardcodedPassword) {
       // Set the loggedin cookie (or local storage, session storage, etc.) to true
-      // document.cookie = 'loggedin=true';
       Cookies.set('loggedin', 'true');
       alert('You are now logged in');
 
       // Redirect to the admin panel
-      if (router) {
-        router.push('/admin-pannel');
-        window.location.reload();
-      } else {
-        window.location.href = '/admin-pannel';
-      }
+      window.location.href = '/admin-pannel';
       
     } else {
       alert('Invalid email or password. Please try again.');

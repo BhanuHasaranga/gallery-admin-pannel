@@ -38,8 +38,8 @@ export default function AdminPanel() {
   }, []);
 
   return (
-    <Router> {/* Wrap component with Router for client-side routing */}
-      <>
+    // <Router> {/* Wrap component with Router for client-side routing */}
+      <div>
         <Navbar
           pageTitle={"ALBUMS"} // Navbar component with specific props
           submitBtnTitle={"Add New Album"} 
@@ -61,7 +61,7 @@ export default function AdminPanel() {
             <p>Loading...</p>
           )}
         </div>
-      </>
-    </Router>
+      </div>
+    // </Router>
   );
 }
