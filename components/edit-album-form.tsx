@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React, { useState } from "react";
 
 interface EditFormProps {
@@ -163,14 +164,22 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
         />
 
         {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-
-        <button
+        <div className="flex py-4 justify-between w-60">
+          <Link href={`/admin-pannel/${albumInfo.id}`}>
+            <button
+             className="text-sm font-normal text-white bg-red-500 px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Cancel
+            </button>
+          </Link>
+          <button
           type="submit"
           className="text-sm font-normal text-white bg-blue-500 px-3 py-1 rounded-md hover:bg-blue-600 transition-colors"
           disabled={inProgress}
         >
           {inProgress ? "Updating..." : "Update"}
         </button>
+        </div>
       </form>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 p-10">
         {albumInfo.urls.map((url: any) => (

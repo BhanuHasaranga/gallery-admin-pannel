@@ -3,6 +3,7 @@
 import React , { useEffect, useState } from 'react'
 import EditForm from '@/components/edit-album-form'
 import { usePathname } from 'next/navigation';
+import { Navbar } from '@/components/navbar';
 
 export default function AddNewAlbum() {
   const pathname = usePathname();
@@ -39,10 +40,13 @@ export default function AddNewAlbum() {
   }
 
   return (
-    <div className='py-4 px-16'>
-      <p>Edit Album {albumData.id}</p>
-      <EditForm albumInfo={albumData}/>
-    </div>
+    <>
+      <Navbar pageTitle={"Edit Album"} submitBtnTitle={"Back to Album Library"} submitBtnPath={"/admin-pannel"} />
+      <div className='py-4 px-16'>
+        <p className='py-2'>Album id: {albumData.id}</p>
+        <EditForm albumInfo={albumData}/>
+      </div>
+    </>
     
   )
 }

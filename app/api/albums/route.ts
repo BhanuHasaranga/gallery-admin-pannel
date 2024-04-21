@@ -24,23 +24,24 @@ export async function POST(request: NextRequest) {
     for (const file of files) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-  
+
       const uniqueFilename = `${uuidv4()}-${file.name}`; // Generate unique filename
-      const filePath = join('F:\\tmp', uniqueFilename);
+      const filePath = join('public', 'uploads', uniqueFilename); // File path relative to project root
       const directoryPath = dirname(filePath);
 
       try {
         // Create the directory if it doesn't exist
         await mkdir(directoryPath, { recursive: true });
-        
+
         // Write the file to the specified path
         await writeFile(filePath, buffer);
-  
-        // Store the file URL for Prisma
-        urls.push({ url: filePath });
+
+        // Construct the public URL for the uploaded file
+        const publicUrl = `http://localhost:3000/uploads/${uniqueFilename}`;
+        urls.push({ url: publicUrl });
       } catch (error) {
-        console.error("Error saving file:", error);
-        return NextResponse.json({ success: false, error: "Failed to save file" });
+        console.error('Error saving file:', error);
+        return NextResponse.json({ success: false, error: 'Failed to save file' });
       }
     }
 

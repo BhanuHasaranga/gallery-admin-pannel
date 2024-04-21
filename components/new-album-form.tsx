@@ -93,7 +93,7 @@ export default function UploadForm() {
     };
 
     const styles = {
-        form: "bg-gray-100 p-4 rounded-lg",
+        form: "bg-gray-100 p-10 mx-14 rounded-lg",
         input: "border p-2 mb-4 w-full border-gray-300 rounded",
         button: "text-sm font-normal text-white bg-blue-500 px-3 py-1 rounded-md hover:bg-blue-600 transition-colors",
         error: "text-red-500 text-sm mt-1",

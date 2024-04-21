@@ -4,7 +4,6 @@
 import React, { useEffect, useState } from "react";
 import { Navbar } from "../../components/navbar";
 import AlbumCard from "../../components/album-card"; 
-import { BrowserRouter as Router } from "react-router-dom";
 import Link from "next/link";
 
 export default function AdminPanel() {
@@ -38,10 +37,9 @@ export default function AdminPanel() {
   }, []);
 
   return (
-    // <Router> {/* Wrap component with Router for client-side routing */}
       <div>
         <Navbar
-          pageTitle={"ALBUMS"} // Navbar component with specific props
+          pageTitle={"Album Library"} // Navbar component with specific props
           submitBtnTitle={"Add New Album"} 
           submitBtnPath="/add-new-album" 
         />
@@ -62,6 +60,5 @@ export default function AdminPanel() {
           )}
         </div>
       </div>
-    // </Router>
   );
 }
