@@ -6,6 +6,14 @@ const { v4: uuidv4 } = require('uuid');
 
 const prisma = new PrismaClient(); // Initialize Prisma client for database operations
 
+// Helper function to set CORS headers
+function setCorsHeaders(response: NextResponse) {
+  response.headers.set('Access-Control-Allow-Origin', 'http://localhost:3001');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST'); // Add other allowed methods if needed
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  response.headers.set('Access-Control-Allow-Credentials', 'true'); // Set this if you need to allow credentials (e.g., cookies)
+}
+
 export async function POST(request: NextRequest) {
   try {
     const data = await request.formData(); // Extract form data from the incoming request
@@ -63,14 +71,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Respond with a JSON object containing the newly created album and its URLs
-    return NextResponse.json({ newAlbum });
+    const response = NextResponse.json({ newAlbum });
+    setCorsHeaders(response);
+    return response;
 
   } catch (error) {
     console.log("Error creating album", error);
-    return NextResponse.json({
+    const response = NextResponse.json({
       status: 500,
       message: 'Internal server error',
     });
+    setCorsHeaders(response);
+    return response;
   }
 }
 
@@ -96,12 +108,17 @@ export async function GET() {
     }));
 
     // Respond with a JSON object containing formatted album data
-    return NextResponse.json(formattedAlbums);
+    const response = NextResponse.json(formattedAlbums);
+    setCorsHeaders(response);
+    return response;
+
   } catch (error) {
     console.error("Error retrieving albums:", error);
-    return NextResponse.json({
+    const response = NextResponse.json({
       status: 500,
       message: 'Internal server error',
     });
+    setCorsHeaders(response);
+    return response;
   }
 }
