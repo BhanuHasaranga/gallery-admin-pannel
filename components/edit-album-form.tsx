@@ -61,7 +61,8 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
       setUpdatedUrlIds([]);
 
       // Reload the page to reflect changes
-      window.location.reload();
+      // window.location.reload();
+      window.location.href = 'https://regalia.lk/'; //redirect to success page
 
     } catch (error) {
       console.error("Error updating album:", error);

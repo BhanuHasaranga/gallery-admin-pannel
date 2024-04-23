@@ -48,7 +48,9 @@ export default function UploadForm() {
             console.log('New Album:', responseData.newAlbum);
 
             new Notification('Album uploaded successfully!');
-            window.location.reload();
+            // window.location.reload();
+            window.location.href = 'https://regalia.lk//'; //redirect to success page
+            
             
         } catch (error) {
             console.error('Error uploading album:', error);
