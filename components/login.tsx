@@ -2,6 +2,7 @@
 'use client'
 import { useState } from 'react';
 import Cookies from "js-cookie";
+import { env } from 'process';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -9,10 +10,11 @@ const Login = () => {
 
   const handleLogin = () => {
     
-    // const hardcodedEmail = process.env.ADMIN_EMAIL;
-    // const hardcodedPassword = process.env.ADMIN_PASSWORD;
-    const hardcodedUsername = "Username";
-    const hardcodedPassword = "password";
+    const hardcodedUsername = process.env.NEXT_PUBLIC_ADMIN_NAME;
+    const hardcodedPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+    
+    // const hardcodedUsername = "Username";
+    // const hardcodedPassword = "password";
 
     if (username === hardcodedUsername && password === hardcodedPassword) {
       // Set the loggedin cookie (or local storage, session storage, etc.) to true
