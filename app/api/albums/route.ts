@@ -90,7 +90,11 @@ export async function GET() {
   try {
     const albums = await prisma.albums.findMany({
       include: {
-        urls: true,
+        urls: {
+          where: {
+            status: true,
+          },
+        },
       },
     });
 
