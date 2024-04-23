@@ -1,6 +1,5 @@
-'use client';
-
 import React, { useState } from 'react';
+import axios, { AxiosRequestConfig } from 'axios';
 
 export default function UploadForm() {
     const [inProgress, setInProgress] = useState(false);
@@ -9,6 +8,7 @@ export default function UploadForm() {
     const [albumType, setAlbumType] = useState('');
     const [files, setFiles] = useState<FileList | null>(null);
     const [fileError, setFileError] = useState<string | null>(null);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -28,35 +28,37 @@ export default function UploadForm() {
         formData.set('name', albumName);
         formData.set('description', albumDescription);
         formData.set('type', albumType);
+        let totalSize = 0;
 
         // Append all selected files to the FormData
         for (let i = 0; i < files.length; i++) {
             formData.append('files', files[i]);
+            totalSize += files[i].size;
         }
 
         try {
-            const response = await fetch('/api/albums', {
-                method: 'POST',
-                body: formData,
-            });
+            const config: AxiosRequestConfig = {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                onUploadProgress: (progressEvent) => {
+                    const progress = Math.round((progressEvent.loaded / totalSize) * 100);
+                    setUploadProgress(progress);
+                },
+            };
 
-            if (!response.ok) {
-                throw new Error('Failed to upload album');
-            }
+            const response = await axios.post('/api/albums', formData, config);
 
-            const responseData = await response.json();
-            console.log('New Album:', responseData.newAlbum);
+            console.log('New Album:', response.data.newAlbum);
 
             new Notification('Album uploaded successfully!');
-            // window.location.reload();
-            window.location.href = 'https://regalia.lk//'; //redirect to success page
-            
-            
+            window.location.href = 'https://regalia.lk/'; //redirect to success page
         } catch (error) {
             console.error('Error uploading album:', error);
+        } finally {
+            setInProgress(false);
+            setUploadProgress(0); // Reset progress after upload completes or fails
         }
-
-        setInProgress(false);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +82,6 @@ export default function UploadForm() {
             photography: ['image/jpeg', 'image/png', 'image/gif'],
             'video production': ['video/mp4', 'video/mpeg', 'video/quicktime'],
         };
-        
 
         const acceptedTypes = allowedTypes[type];
         if (!acceptedTypes) return false;
@@ -140,6 +141,10 @@ export default function UploadForm() {
             />
             
             {fileError && <p className={styles.error}>{fileError}</p>}
+
+            {uploadProgress > 0 && (
+                <p className="text-sm text-gray-500">{`Uploading: ${uploadProgress}%`}</p>
+            )}
 
             <button className={styles.button} type='submit' disabled={inProgress || !files || !!fileError}>
                 {inProgress ? 'Uploading...' : 'Upload'}
