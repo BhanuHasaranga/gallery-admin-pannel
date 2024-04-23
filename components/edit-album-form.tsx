@@ -68,7 +68,7 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
 
       // Redirect to success page
       new Notification('Album updated successfully!');
-      window.location.href = "https://regalia.lk/";
+      window.location.href = "https://notifications.regalia.lk/";
 
     } catch (error) {
       console.error("Error updating album:", error);
