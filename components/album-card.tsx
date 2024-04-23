@@ -8,7 +8,7 @@ interface AlbumCardProps {
   albumType: string;
 }
 
-const AlbumCard: React.FC<AlbumCardProps> = ({ title, img, albumId }) => {
+const AlbumCard: React.FC<AlbumCardProps> = ({ title, img = '', albumId }) => {
   const getFileExtension = (url: string): string => {
     return url.split('.').pop()?.toLowerCase() || '';
   };
@@ -20,7 +20,13 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ title, img, albumId }) => {
   };
 
   const renderMedia = () => {
-    if (isImage(img)) {
+    if (!img) {
+      return (
+        <div className="w-full h-64 flex items-center justify-center text-gray-400">
+          This album has no media file
+        </div>
+      );
+    } else if (isImage(img)) {
       return <img src={img} alt={title} className="w-full h-64 object-cover" />;
     } else {
       return (
