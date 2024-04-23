@@ -12,9 +12,6 @@ const Login = () => {
     
     const hardcodedUsername = process.env.NEXT_PUBLIC_ADMIN_NAME;
     const hardcodedPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-    
-    // const hardcodedUsername = "Username";
-    // const hardcodedPassword = "password";
 
     if (username === hardcodedUsername && password === hardcodedPassword) {
       // Set the loggedin cookie (or local storage, session storage, etc.) to true
