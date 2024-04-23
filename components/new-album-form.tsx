@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
+import Link from 'next/link';
 
 export default function UploadForm() {
     const [inProgress, setInProgress] = useState(false);
@@ -142,13 +143,25 @@ export default function UploadForm() {
             
             {fileError && <p className={styles.error}>{fileError}</p>}
 
-            {uploadProgress > 0 && (
-                <p className="text-sm text-gray-500">{`Uploading: ${uploadProgress}%`}</p>
-            )}
-
-            <button className={styles.button} type='submit' disabled={inProgress || !files || !!fileError}>
-                {inProgress ? 'Uploading...' : 'Upload'}
-            </button>
+            <div className="flex py-4 justify-between w-80">
+                <Link href={"/admin-pannel/"}>
+                  <button
+                   className="text-sm font-normal text-white bg-red-500 px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </Link>
+                {uploadProgress > 0 && (
+                  <p className="text-sm text-gray-500">{`Uploading: ${uploadProgress}%`}</p>
+                )}
+                <button
+                 type="submit"
+                 className="text-sm font-normal text-white bg-blue-500 px-3 py-1 rounded-md hover:bg-blue-600 transition-colors"
+                 disabled={inProgress}
+                >
+                  {inProgress ? "Updating..." : "Update"}
+                </button>
+          </div>
         </form>
     );
 }
