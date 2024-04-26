@@ -7,6 +7,14 @@ const { v4: uuidv4 } = require("uuid");
 // Initialize Prisma client
 const prisma = new PrismaClient();
 
+// Helper function to set CORS headers
+function setCorsHeaders(response: NextResponse) {
+  response.headers.set('Access-Control-Allow-Origin', 'http://localhost:3001');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST'); // Add other allowed methods if needed
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  response.headers.set('Access-Control-Allow-Credentials', 'true'); // Set this if you need to allow credentials (e.g., cookies)
+}
+
 // GET function to retrieve album details by ID
 export async function GET(request: NextRequest) {
   try {
@@ -46,19 +54,23 @@ export async function GET(request: NextRequest) {
     const { name, description, type, urls } = album;
     const urlsWithIds = urls.map((url) => ({ id: url.id, url: url.url }));
 
-    return NextResponse.json({
-      id,
-      name,
-      description,
-      type,
-      urls: urlsWithIds,
-    });
+    const response = NextResponse.json({
+                      id,
+                      name,
+                      description,
+                      type,
+                      urls: urlsWithIds,
+                    });
+    setCorsHeaders(response);
+    return response;
   } catch (error) {
     console.error("Error retrieving album:", error);
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: false,
       error: "Internal server error",
     });
+    setCorsHeaders(response);
+    return response;
   }
 }
 
@@ -125,10 +137,12 @@ export async function POST(request: NextRequest) {
           urlsToCreate.push({ url: publicUrl });
         } catch (error) {
           console.error("Error saving file:", error);
-          return NextResponse.json({
+          const response = NextResponse.json({
             success: false,
             error: "Failed to save file",
           });
+          setCorsHeaders(response);
+          return response;
         }
       }
 
@@ -162,16 +176,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Respond with success message
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: "Album updated successfully",
     });
+    setCorsHeaders(response);
+    return response;
   } catch (error) {
     console.error("Error updating album:", error);
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: false,
       error: "Internal server error",
     });
+    setCorsHeaders(response);
+    return response;
   } finally {
     await prisma.$disconnect(); // Disconnect Prisma client after use
   }
