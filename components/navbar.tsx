@@ -17,7 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({pageTitle, submitBtnTitle, submit
   return (
     <nav className="bg-white shadow-lg px-4 py-2 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-      <img src="/logo.png" className="h-12" alt="Gray House Media Logo" />
+      {/* <img src="/logo.png" className="h-12" alt="Gray House Media Logo" /> */}
         <div className="flex-shrink-0">
           <p className="font-bold text-gray-800">{pageTitle}</p>
         </div>

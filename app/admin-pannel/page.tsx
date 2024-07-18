@@ -9,12 +9,16 @@ import Link from "next/link";
 export default function AdminPanel() {
 
   type Album = {
-    id : any,
+    id: any,
     name: any,
     description: any,
     type: any, 
-    urls: any,
-  } 
+    urls: {
+      url: any,
+      thumbnail: any
+    }[]
+  }
+  
 
   const [albums, setAlbums] = useState<Album[]>([]); // State to hold album data fetched from API
 
@@ -49,7 +53,11 @@ export default function AdminPanel() {
               <Link href={`admin-pannel/${album.id}`} key={album.id}>
                 <AlbumCard
                   title={album.name}
-                  img={album.urls[0]}
+                  img={
+                    album.type === 'photography'
+                      ? (album.urls.length > 0 ? album.urls[0].url : 'default-image-url') // Use URL for photography
+                      : (album.urls.length > 0 ? album.urls[0].thumbnail : 'default-image-url') // Use thumbnail or URL for video production
+                  }
                   albumId={album.id}
                   albumType={album.type}
                 />

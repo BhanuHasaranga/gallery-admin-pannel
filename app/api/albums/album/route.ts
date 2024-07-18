@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { join, dirname } from "path";
 import { writeFile, mkdir } from "fs/promises";
+import { usePathname } from "next/navigation";
 const { v4: uuidv4 } = require("uuid");
 
 // Initialize Prisma client

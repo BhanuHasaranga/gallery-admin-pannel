@@ -8,7 +8,7 @@ interface AlbumCardProps {
   albumType: string;
 }
 
-const AlbumCard: React.FC<AlbumCardProps> = ({ title, img = '', albumId }) => {
+const AlbumCard: React.FC<AlbumCardProps> = ({ title, img = ''}) => {
   const getFileExtension = (url: string): string => {
     return url.split('.').pop()?.toLowerCase() || '';
   };

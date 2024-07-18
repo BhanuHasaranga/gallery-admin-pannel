@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.12.1",
+    "@rajesh896/video-thumbnails-generator": "^2.3.9",
     "axios": "^1.6.8",
     "formidable": "^3.5.1",
     "js-cookie": "^3.0.5",

@@ -10,6 +10,8 @@ export default function UploadForm() {
     const [files, setFiles] = useState<FileList | null>(null);
     const [fileError, setFileError] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState<number>(0);
+    const [formData, setFormData] = useState<FormData | null>(null);
+    const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null); // State to store thumbnail URL
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -25,16 +27,9 @@ export default function UploadForm() {
             return;
         }
 
-        const formData = new FormData();
-        formData.set('name', albumName);
-        formData.set('description', albumDescription);
-        formData.set('type', albumType);
-        let totalSize = 0;
-
-        // Append all selected files to the FormData
-        for (let i = 0; i < files.length; i++) {
-            formData.append('files', files[i]);
-            totalSize += files[i].size;
+        if (!formData) {
+            console.error('FormData not initialized');
+            return;
         }
 
         try {
@@ -43,26 +38,28 @@ export default function UploadForm() {
                     'Content-Type': 'multipart/form-data',
                 },
                 onUploadProgress: (progressEvent) => {
-                    const progress = Math.round((progressEvent.loaded / totalSize) * 100);
-                    setUploadProgress(progress);
+                    if (progressEvent.total !== undefined) {
+                        const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                        setUploadProgress(progress);
+                    }
                 },
             };
 
             const response = await axios.post('/api/albums', formData, config);
 
-            console.log('New Album:', response.data.newAlbum);
+            console.log('New Album:', response);
+            console.log('Album uploaded successfully!');
 
             new Notification('Album uploaded successfully!');
-            window.location.href = 'https://notifications.regalia.lk/'; //redirect to success page
         } catch (error) {
             console.error('Error uploading album:', error);
         } finally {
             setInProgress(false);
-            setUploadProgress(0); // Reset progress after upload completes or fails
+            setUploadProgress(0);
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = e.target.files;
         setFiles(selectedFiles);
 
@@ -72,8 +69,61 @@ export default function UploadForm() {
                 setFileError(`Invalid file type for ${albumType}`);
             } else {
                 setFileError(null);
+
+                const newFormData = new FormData();
+                newFormData.set('name', albumName);
+                newFormData.set('description', albumDescription);
+                newFormData.set('type', albumType);
+
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    newFormData.append('files', file);
+
+                    if (albumType === 'video production' && file.type.startsWith('video/')) {
+                        const thumbnail = await generateVideoThumbnail(file);
+                        if (thumbnail) {
+                            newFormData.set('thumbnail', thumbnail);
+                            const thumbnailBlobUrl = URL.createObjectURL(thumbnail);
+                            setThumbnailUrl(thumbnailBlobUrl);
+                        }
+                    }
+                }
+                setFormData(newFormData);
             }
         }
+    };
+
+    const generateVideoThumbnail = (file: File) => {
+        return new Promise<File | null>((resolve) => {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+    
+            video.onloadedmetadata = async () => {
+                video.currentTime = 1;
+                await video.play().catch(() => {});
+    
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+    
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const thumbnailFile = new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' });
+                            resolve(thumbnailFile);
+                        } else {
+                            resolve(null);
+                        }
+                    }, 'image/jpeg');
+                } else {
+                    resolve(null);
+                }
+            };
+    
+            video.src = URL.createObjectURL(file);
+        });
     };
 
     const validateFileType = (type: string, files: FileList | null) => {
@@ -125,7 +175,7 @@ export default function UploadForm() {
                 value={albumType}
                 onChange={(e) => {
                     setAlbumType(e.target.value);
-                    setFileError(null); // Reset file error when album type changes
+                    setFileError(null);
                 }}
                 className={styles.input}
             >
@@ -137,11 +187,18 @@ export default function UploadForm() {
             <input
                 type="file"
                 name="files"
-                multiple
+                multiple={albumType !== 'video production'}
                 onChange={handleFileChange}
             />
             
             {fileError && <p className={styles.error}>{fileError}</p>}
+
+            {thumbnailUrl && (
+                <div>
+                    <p>Generated Thumbnail:</p>
+                    <img src={thumbnailUrl} alt="Video Thumbnail" className="w-64 h-auto" />
+                </div>
+            )}
 
             <div className="flex py-4 justify-between w-80">
                 <Link href={"/admin-pannel/"}>
@@ -161,7 +218,7 @@ export default function UploadForm() {
                 >
                   {inProgress ? "Updating..." : "Update"}
                 </button>
-          </div>
+            </div>
         </form>
     );
 }
