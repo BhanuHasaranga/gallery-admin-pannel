@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { join, dirname } from "path";
 import { writeFile, mkdir } from "fs/promises";
-import { usePathname } from "next/navigation";
 const { v4: uuidv4 } = require("uuid");
 
 // Initialize Prisma client
@@ -56,12 +55,12 @@ export async function GET(request: NextRequest) {
     const urlsWithIds = urls.map((url) => ({ id: url.id, url: url.url }));
 
     const response = NextResponse.json({
-                      id,
-                      name,
-                      description,
-                      type,
-                      urls: urlsWithIds,
-                    });
+      id,
+      name,
+      description,
+      type,
+      urls: urlsWithIds,
+    });
     setCorsHeaders(response);
     return response;
   } catch (error) {
@@ -119,11 +118,12 @@ export async function POST(request: NextRequest) {
     });
 
     // Handle file uploads and create corresponding URLs
-    const files = formData.getAll("files") as unknown as FileList;
+    const files = formData.getAll("files") as unknown as File[];
+    const thumbnails = formData.getAll("thumbnail") as unknown as File[];
     if (files.length > 0) {
       const urlsToCreate = [];
 
-      for (const file of Array.from(files)) {
+      for (const file of files) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
@@ -135,7 +135,38 @@ export async function POST(request: NextRequest) {
           await mkdir(directoryPath, { recursive: true });
           await writeFile(filePath, buffer);
           const publicUrl = `http://localhost:3000/uploads/${uniqueFilename}`;
-          urlsToCreate.push({ url: publicUrl });
+
+          if (!thumbnails || thumbnails.length === 0) {
+            urlsToCreate.push({ url: publicUrl });
+          }
+
+          // Handle thumbnail uploads and create corresponding URLs
+          if (thumbnails.length > 0) {
+            for (const file of thumbnails) {
+              const bytes = await file.arrayBuffer();
+              const buffer = Buffer.from(bytes);
+    
+              const uniqueFilename = `${uuidv4()}-${file.name}`; // Generate unique filename
+              const filePath = join("public", "thumbnails", uniqueFilename); // File path relative to project root
+              const directoryPath = dirname(filePath);
+    
+              try {
+                await mkdir(directoryPath, { recursive: true });
+                await writeFile(filePath, buffer);
+                const publicThumbnailUrl = `http://localhost:3000/thumbnails/${uniqueFilename}`;
+                urlsToCreate.push({ url: publicUrl, thumbnail: publicThumbnailUrl });
+              } catch (error) {
+                console.error("Error saving thumbnail:", error);
+                const response = NextResponse.json({
+                  success: false,
+                  error: "Failed to save thumbnail",
+                });
+                setCorsHeaders(response);
+                return response;
+              }
+            }
+          }
+
         } catch (error) {
           console.error("Error saving file:", error);
           const response = NextResponse.json({
@@ -150,7 +181,8 @@ export async function POST(request: NextRequest) {
       // Create URLs in the database for the uploaded files
       await prisma.urls.createMany({
         data: urlsToCreate.map((url) => ({
-          url: url.url,
+          url: url.url || '',
+          thumbnail: url.thumbnail || null,
           albumId: albumId,
         })),
       });

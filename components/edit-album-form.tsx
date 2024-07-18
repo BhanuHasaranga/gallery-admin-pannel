@@ -14,6 +14,7 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [updatedUrlIds, setUpdatedUrlIds] = useState<number[]>([]);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [thumbnail, setthumbnail] = useState<{ file: File; thumbnail: string }[]>([]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,9 +38,16 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
 
     if (files && files.length > 0) {
       for (let i = 0; i < files.length; i++) {
-        formData.append(`files`, files[i]);
+        formData.append("files", files[i]);
         console.log("File added:", files[i].name);
         totalSize += files[i].size;
+      }
+    }
+
+    if (thumbnail.length > 0) {
+      for (const { file } of thumbnail) {
+        formData.append("thumbnail", file);
+        console.log("Thumbnail added:", file.name);
       }
     }
 
@@ -106,7 +114,7 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
     console.log("Album description changed:", e.target.value);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
     if (selectedFiles) {
       const isValidType = validateFileType(albumInfo.type, selectedFiles);
@@ -116,6 +124,22 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
         setFiles(selectedFiles);
         setErrorMessage(null);
         console.log("Files selected:", selectedFiles);
+
+        if (albumInfo.type === 'video production') {
+          const newthumbnail = await Promise.all(
+            Array.from(selectedFiles).map(async (file) => {
+              if (file.type.startsWith('video/')) {
+                const thumbnail = await generateVideoThumbnail(file);
+                if (thumbnail) {
+                  return { file: thumbnail, thumbnail: URL.createObjectURL(thumbnail) };
+                }
+              }
+              return null;
+            })
+          );
+
+          setthumbnail(newthumbnail.filter((thumb) => thumb !== null) as { file: File; thumbnail: string }[]);
+        }
       }
     }
   };
@@ -137,6 +161,39 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
 
     return true;
   };
+
+  const generateVideoThumbnail = (file: File) => {
+    return new Promise<File | null>((resolve) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+
+        video.onloadedmetadata = async () => {
+            video.currentTime = 1;
+            await video.play().catch(() => {});
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const thumbnailFile = new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' });
+                        resolve(thumbnailFile);
+                    } else {
+                        resolve(null);
+                    }
+                }, 'image/jpeg');
+            } else {
+                resolve(null);
+            }
+        };
+
+        video.src = URL.createObjectURL(file);
+    });
+};
 
   return (
     <>
@@ -160,7 +217,7 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
         <input
           type="file"
           name="files"
-          multiple
+          multiple={albumInfo.type !== 'video production'}
           onChange={handleFileChange}
           accept={
             albumInfo.type === "photography"
@@ -172,6 +229,16 @@ const EditForm: React.FC<EditFormProps> = ({ albumInfo }) => {
         />
 
         {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+        {thumbnail.length > 0 && (
+          <div>
+            <p>Generated thumbnail:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {thumbnail.map((thumb, index) => (
+                <img key={index} src={thumb.thumbnail} alt="Video Thumbnail" className="w-64 h-auto" />
+              ))}
+            </div>
+          </div>
+        )}
         <div className="flex py-4 justify-between w-80">
           <Link href={`/admin-panel/${albumInfo.id}`}>
             <button className="text-sm font-normal text-white bg-red-500 px-3 py-1 rounded-md hover:bg-red-600 transition-colors">
