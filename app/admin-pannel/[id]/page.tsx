@@ -79,7 +79,9 @@ const AlbumInfo = () => {
         console.error("Error deleting album:", error);
       }
     }
-    window.location.href = '/admin-pannel';
+    // Redirect to success page
+    new Notification('Album deleted successfully!');
+    window.location.href = "https://notifications.regalia.lk/";
   };
   
   
